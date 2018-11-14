@@ -2,8 +2,8 @@
 //  ViewController.swift
 //  iDataLogger
 //
-//  Created by Abhilash Tyagion 11/5/18.
-//  Copyright © 2018 Polaris Wireless Inc. All rights reserved.
+//  Created by Swift v2on 11/5/18.
+//  Copyright © 2018 Swift v2 All rights reserved.
 //
 
 import UIKit

@@ -2,8 +2,8 @@
 //  LocationManager.swift
 //  iDataLogger
 //
-//  Created by Abhilash Tyagi on 10/11/18.
-//  Copyright © 2018 Polaris Wireless Inc. All rights reserved.
+//  Created by Swift v2 on 10/11/18.
+//  Copyright © 2018 Swift v2 All rights reserved.
 //
 
 import UIKit
