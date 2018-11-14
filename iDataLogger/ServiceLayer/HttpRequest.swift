@@ -1,9 +1,9 @@
 //
 //  ConnectionManager.swift
-//  Swift v2
+//  iDataLogger
 //
-//  Created by Swift v2 on 11/7/18.
-//  Copyright © 2018 Swift v2. All rights reserved.
+//  Created by Abhilash Tyagion 11/7/18.
+//  Copyright © 2018 Polaris Wireless Inc. All rights reserved.
 //
 
 import Foundation
@@ -58,7 +58,7 @@ class HttpRequest
         
     }
     
-    func doGetSOAPResponse ( _ completion: @escaping (_ result: Bool) -> Void)
+    func doGetResponse ( _ completion: @escaping (_ result: Bool) -> Void)
     {
         if app_delegate.isServerReachable == true
         {
@@ -69,7 +69,7 @@ class HttpRequest
             }
             else
             {
-                requestBody = self.doPrepareSOAPEnvelope().data(using: String.Encoding.utf8.rawValue)
+                requestBody = self.doPrepareEnvelope().data(using: String.Encoding.utf8.rawValue)
             }
             var strUrl : NSString = _serviceURL as NSString
             if serviceName.count > 0
@@ -95,7 +95,12 @@ class HttpRequest
             config.timeoutIntervalForResource = 180.0
             let session = URLSession(configuration: config)
             let task = session.dataTask(with: request) { (data, response, err) in
-                let dataString = NSString(data: data!, encoding: String.Encoding.utf8.rawValue)
+                if err != nil
+                {
+                    completion(false)
+                }else{
+                    
+                    let dataString = NSString(data: data!, encoding: String.Encoding.utf8.rawValue)
                 print("Response : ",dataString ?? "")
                 let data = self.convertStringToDictionary(dataString!)
                 if data is [String:AnyObject]
@@ -110,7 +115,7 @@ class HttpRequest
                 
                 completion (true)
             }
-            
+            }
             task.resume()
         }
         else
@@ -137,15 +142,15 @@ class HttpRequest
         return "" as AnyObject
     }
     
-    func doPrepareSOAPEnvelope() ->NSMutableString
+    func doPrepareEnvelope() ->NSMutableString
     {
-        let soapEnvelope :NSMutableString? = NSMutableString()
+        let Envelope :NSMutableString? = NSMutableString()
         let keys  = self.params.keys
         let allKey : Int = self.params.count
         if allKey > 0
         {
             
-            soapEnvelope?.appendFormat("%@=%@", keys.first! , self.params[keys.first!] as! String)
+            Envelope?.appendFormat("%@=%@", keys.first! , self.params[keys.first!] as! String)
             
             
             for i in 1 ..< allKey {
@@ -154,7 +159,7 @@ class HttpRequest
                 
                 if object is NSString
                 {
-                    soapEnvelope?.appendFormat("&%@=%@", Array(keys)[i],self.params[Array(keys)[i]] as! String)
+                    Envelope?.appendFormat("&%@=%@", Array(keys)[i],self.params[Array(keys)[i]] as! String)
                     
                 }
                 else if object is NSMutableArray
@@ -162,8 +167,8 @@ class HttpRequest
                     do {
                         let jsonData2 : Data = try JSONSerialization.data(withJSONObject: object, options: JSONSerialization.WritingOptions.prettyPrinted)
                         let datastring = NSString(data: jsonData2, encoding: UInt())
-                        print("Response in doPrepareSOAPEnvelope : ",datastring ?? "")
-                        soapEnvelope?.appendFormat("&%@=%@", Array(keys)[i],datastring!)
+                        print("Response in doPrepareEnvelope : ",datastring ?? "")
+                        Envelope?.appendFormat("&%@=%@", Array(keys)[i],datastring!)
                         
                         // use jsonData
                     } catch {
@@ -174,10 +179,10 @@ class HttpRequest
                 }
                 
             }
-            print(soapEnvelope!);
+            print(Envelope!);
         }
         
-        return soapEnvelope!
+        return Envelope!
     }
     func manuallyUTF8Encoding(_ str : NSString) ->NSString
     {

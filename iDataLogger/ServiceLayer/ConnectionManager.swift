@@ -1,19 +1,16 @@
 //
 //  ConnectionManager.swift
-//  Swift v2
+//  iDataLogger
 //
-//  Created by Swift v2 on 11/7/18.
-//  Copyright © 2018 Swift v2. All rights reserved.
+//  Created by Abhilash Tyagion 11/7/18.
+//  Copyright © 2018 Polaris Wireless Inc. All rights reserved.
 //
 
 import UIKit
 public enum ParsingConstant : Int
 {
-    case GetOTP
-    case VerifyOTP
-    case GetProfile
-    case GetActivity
-    case GetFAQ
+    case getHeartBeat
+    case PostLocationRequest
 }
 class ConnectionManager: NSObject {
     let SERVER_ERROR = "Server not responding.\nPlease try after some time."
@@ -22,11 +19,11 @@ class ConnectionManager: NSObject {
     {
         let imei = FunctionUtil().getUUIDForKey(KeychainItem_imeiUUID)
         let obj : HttpRequest = HttpRequest()
-        obj.tag = ParsingConstant.GetOTP.rawValue
+        obj.tag = ParsingConstant.getHeartBeat.rawValue
         obj.MethodNamee = "GET"
         obj._serviceURL = "http://demo-d1.polariswireless.com/HeartBeatAndRemoteConfig.php?HeartBeatVer=1&config_id=11&uuid=\(imei)&devicetoken="
         obj.params = [:]
-        obj.doGetSOAPResponse {(success : Bool) -> Void in
+        obj.doGetResponse {(success : Bool) -> Void in
             if !success
             {
                 failureMessage(self.SERVER_ERROR)
@@ -106,7 +103,7 @@ class ConnectionManager: NSObject {
                         {
                             bo.Autotest_interval_in_secs = Autotest_interval_in_secs
                         }
-                        if let Autotest_location_name = setting["Autotest_location_name"] as? Double
+                        if let Autotest_location_name = setting["Autotest_location_name"] as? String
                         {
                             bo.Autotest_location_name = Autotest_location_name
                         }
@@ -223,7 +220,53 @@ class ConnectionManager: NSObject {
             }
         }
     }
-    
+    public func sendRequestWith(isLocReq:Bool,loc_engine:String,request_time:String,device_imsi:String,device_imei:String,location_id:String,lat:String,long:String,acc:String,alt:String,vAccuracy:String,speed:String,speedAccuracy:String,successMessage: @escaping (Any) -> Void , failureMessage : @escaping(Any) ->Void)
+    {
+        let obj : HttpRequest = HttpRequest()
+        var params = [String:AnyObject]()
+        params["loc_engine"] = loc_engine as AnyObject
+        params["request_time"] = request_time as AnyObject
+        params["device_imsi"] = device_imsi as AnyObject
+        params["device_imei"] = device_imei as AnyObject
+        params["location_id"] = location_id as AnyObject
+        params["lat"] = lat as AnyObject
+        params["long"] = long as AnyObject
+        params["acc"] = acc as AnyObject
+        params["alt"] = alt as AnyObject
+        params["vAccuracy"] = vAccuracy as AnyObject
+        params["speed"] = speed as AnyObject
+        params["speedAccuracy"] = speedAccuracy as AnyObject
+
+        obj.tag = ParsingConstant.PostLocationRequest.rawValue
+        obj.MethodNamee = "POST"
+        if isLocReq
+        {
+            obj._serviceURL = "http://demo-d1.polariswireless.com/locationRequest.php"
+        }
+        else
+        {
+            obj._serviceURL = "http://demo-d1.polariswireless.com/autoReport.php"
+        }
+        obj.params = params
+        obj.doGetResponse {(success : Bool) -> Void in
+            if !success
+            {
+                failureMessage(self.SERVER_ERROR)
+            }
+            else
+            {
+                if let response = obj.parsedDataDict["response"] as? [String:AnyObject]
+                {
+                    successMessage(response)
+                }
+                else
+                {
+                    failureMessage(self.SERVER_ERROR)
+                }
+                
+            }
+        }
+    }
 
 //MARK:- Utility Methods
     public func convertDictionaryToString(dict: [String:String]) -> String? {

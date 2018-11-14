@@ -33,3 +33,4 @@ static inline BOOL FDIsEmpty(id object)
 	
 	return isEmpty;
 }
+

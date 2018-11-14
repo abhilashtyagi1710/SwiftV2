@@ -13,6 +13,8 @@
 		728C5B692193D2AE002CB080 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 728C5B682193D2AE002CB080 /* Reachability.swift */; };
 		728C5B6F2193D386002CB080 /* DataLoggerUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 728C5B6E2193D386002CB080 /* DataLoggerUserDefaults.swift */; };
 		728C5B732193DF51002CB080 /* FunctionUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 728C5B722193DF51002CB080 /* FunctionUtil.swift */; };
+		72C372AB21969B3200D172AF /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72C372AA21969B3200D172AF /* LocationManager.swift */; };
+		72C372AD2197C35400D172AF /* BaroManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72C372AC2197C35400D172AF /* BaroManager.swift */; };
 		72CA9E2221933BB30027A6F6 /* FDKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 72CA9E2121933BB30027A6F6 /* FDKeychain.m */; };
 		72E8F05A2190F8700030189A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 72E8F0582190F8700030189A /* Main.storyboard */; };
 		72E8F05C2190F8710030189A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 72E8F05B2190F8710030189A /* Assets.xcassets */; };
@@ -29,6 +31,8 @@
 		728C5B682193D2AE002CB080 /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		728C5B6E2193D386002CB080 /* DataLoggerUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataLoggerUserDefaults.swift; sourceTree = "<group>"; };
 		728C5B722193DF51002CB080 /* FunctionUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FunctionUtil.swift; sourceTree = "<group>"; };
+		72C372AA21969B3200D172AF /* LocationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		72C372AC2197C35400D172AF /* BaroManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaroManager.swift; sourceTree = "<group>"; };
 		72CA9E1E21933BB30027A6F6 /* FDNullOrEmpty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FDNullOrEmpty.h; sourceTree = "<group>"; };
 		72CA9E1F21933BB30027A6F6 /* DataLogger.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataLogger.pch; sourceTree = "<group>"; };
 		72CA9E2021933BB30027A6F6 /* FDKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FDKeychain.h; sourceTree = "<group>"; };
@@ -96,6 +100,8 @@
 				728C5B722193DF51002CB080 /* FunctionUtil.swift */,
 				72CA9E2421933CA30027A6F6 /* iDataLogger-Bridging-Header.h */,
 				728C5B682193D2AE002CB080 /* Reachability.swift */,
+				72C372AA21969B3200D172AF /* LocationManager.swift */,
+				72C372AC2197C35400D172AF /* BaroManager.swift */,
 				728C5B6E2193D386002CB080 /* DataLoggerUserDefaults.swift */,
 			);
 			path = CommonUtilities;
@@ -226,6 +232,8 @@
 				728C5B6F2193D386002CB080 /* DataLoggerUserDefaults.swift in Sources */,
 				72CA9E2221933BB30027A6F6 /* FDKeychain.m in Sources */,
 				7228E9362191338900029538 /* AppDelegate.swift in Sources */,
+				72C372AD2197C35400D172AF /* BaroManager.swift in Sources */,
+				72C372AB21969B3200D172AF /* LocationManager.swift in Sources */,
 				728C5B692193D2AE002CB080 /* Reachability.swift in Sources */,
 				728C5B732193DF51002CB080 /* FunctionUtil.swift in Sources */,
 				A7D840E721951E3700E21FD2 /* HttpRequest.swift in Sources */,
@@ -378,15 +386,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = 7XPV9MKHRH;
 				INFOPLIST_FILE = iDataLogger/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.polariswireless.iDataLogger;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = iDataLogger_Dev;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/iDataLogger/CommonUtilities/iDataLogger-Bridging-Header.h";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -397,15 +407,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = 7XPV9MKHRH;
 				INFOPLIST_FILE = iDataLogger/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.polariswireless.iDataLogger;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = iDataLogger_Dev;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/iDataLogger/CommonUtilities/iDataLogger-Bridging-Header.h";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";

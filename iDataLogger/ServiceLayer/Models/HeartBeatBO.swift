@@ -1,9 +1,9 @@
 //
 //  HeartBeatBO.swift
-//  Swift v2
+//  iDataLogger
 //
-//  Created by Swift v2 on 11/7/18.
-//  Copyright © 2018 Swift v2. All rights reserved.
+//  Created by Abhilash Tyagi on 11/7/18.
+//  Copyright © 2018 Polaris Wireless Inc. All rights reserved.
 //
 
 import UIKit
@@ -27,7 +27,7 @@ class HeartBeatBO: NSObject {
     var Temperature_update_rate_in_ms = Double(0)
     var WiFi_update_rate_in_ms = Double(0)
     var Autotest_interval_in_secs = Double(0)
-    var Autotest_location_name = Double(0)
+    var Autotest_location_name = ""
     var Autotest_test_count = Double(0)
     var Barometer_update_rate_in_us = Double(0)
     var Display_server_feedback = Double(0)
