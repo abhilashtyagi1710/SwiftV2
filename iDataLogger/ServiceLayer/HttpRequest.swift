@@ -150,10 +150,10 @@ class HttpRequest
         if allKey > 0
         {
             
-//            Envelope?.appendFormat("%@=%@", keys.first! , self.params[keys.first!] as! String)
+            Envelope?.appendFormat("%@=%@", keys.first! , self.params[keys.first!] as! String)
             
             
-            for i in 0 ..< allKey-1 {
+            for i in 1..<allKey {
                 
                 let object : AnyObject = self.params[Array(keys)[i]]! as AnyObject;
                 

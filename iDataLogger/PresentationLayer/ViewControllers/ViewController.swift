@@ -106,7 +106,10 @@ class ViewController: BaseViewController {
 
     func   postLocationRequestToServer()
     {
-        //add
+        if arrLoc.count <= 0
+        {
+            return
+        }
         var dictReq = [String:AnyObject]()
         dictReq["location"] = [["hAccuracy" : "5","height" : "0","latitude" : "37.785834","longitude" : "-122.406417","timeStamp" : "1542160661.819661","vAccuracy" : "-1"],["hAccuracy" : "5","height" : "0","latitude" : "37.785834","longitude" : "-122.406417","timeStamp" : "1542160661.819661","vAccuracy" : "-1"]] as AnyObject
         let currentDate = Date()
@@ -125,7 +128,7 @@ class ViewController: BaseViewController {
         }
         print("Current Location : \(LocationManager.shared.location.coordinate.latitude,LocationManager.shared.location.coordinate.longitude)")
         let layer = ConnectionManager()
-        layer.sendRequestWith(isLocReq: false, params: dictReq, successMessage: { (response) in
+        layer.sendRequestWith(isLocReq: true, device_imsi: "", device_imei: uuid, location_id: locationNameTxtFld.text!, arrLoc: arrLoc,arrBaro: arrBaro, successMessage: { (response) in
             DispatchQueue.main.async {
                 print("Success in Loc Service")
                 self.arrBaro.removeAll()

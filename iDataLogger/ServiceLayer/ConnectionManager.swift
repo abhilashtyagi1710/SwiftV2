@@ -220,7 +220,9 @@ class ConnectionManager: NSObject {
             }
         }
     }
-    func tes(isLocReq:Bool,arrLocation:[[String:AnyObject]],successMessage: @escaping (Any) -> Void , failureMessage : @escaping(Any) ->Void)
+    //    public func sendRequestWith(isLocReq:Bool,loc_engine:String,request_time:String,device_imsi:String,device_imei:String,location_id:String,lat:String,long:String,acc:String,alt:String,vAccuracy:String,speed:String,speedAccuracy:String,successMessage: @escaping (Any) -> Void , failureMessage : @escaping(Any) ->Void)
+
+    func tes(isLocReq:Bool,device_imsi:String,device_imei:String,location_id:String,arrLocation:[[String:AnyObject]],successMessage: @escaping (Any) -> Void , failureMessage : @escaping(Any) ->Void)
     {
         if app_delegate.isServerReachable == true
         {
@@ -281,22 +283,59 @@ class ConnectionManager: NSObject {
         }
         
     }
-    public func sendRequestWith(isLocReq:Bool,params:[String:AnyObject],successMessage: @escaping (Any) -> Void , failureMessage : @escaping(Any) ->Void)
+    public func sendRequestWith(isLocReq:Bool,device_imsi:String,device_imei:String,location_id:String, arrLoc:[[String:String]],arrBaro:[[String:String]],successMessage: @escaping (Any) -> Void , failureMessage : @escaping(Any) ->Void)
     {
+        
         let obj : HttpRequest = HttpRequest()
-        //        var params = [String:AnyObject]()
-        //        params["loc_engine"] = loc_engine as AnyObject
-        //        params["request_time"] = request_time as AnyObject
-        //        params["device_imsi"] = device_imsi as AnyObject
-        //        params["device_imei"] = device_imei as AnyObject
-        //        params["location_id"] = location_id as AnyObject
-        //        params["lat"] = lat as AnyObject
-        //        params["long"] = long as AnyObject
-        //        params["acc"] = acc as AnyObject
-        //        params["alt"] = alt as AnyObject
-        //        params["vAccuracy"] = vAccuracy as AnyObject
-        //        params["speed"] = speed as AnyObject
-        //        params["speedAccuracy"] = speedAccuracy as AnyObject
+        var params = [String:AnyObject]()
+        var strBaro = ""
+        if arrBaro.count > 0
+        {
+            strBaro = strBaro.appending("[")
+            for baro in arrBaro
+            {
+                strBaro = strBaro.appending("{\"pressure\":\"" + baro["pressure"]!)
+                strBaro = strBaro.appending("\",\"altitude\":\"" + baro["altitude"]!)
+                strBaro = strBaro.appending("\",\"time\":\"0\"},")
+            }
+            strBaro.removeLast()
+            strBaro.append("]")
+        }
+        var strLoc = ""
+        
+        if arrLoc.count > 0
+        {
+            strLoc.append("[")
+            for loc in arrLoc
+            {
+                strLoc = strLoc.appending("{\"hAccuracy\":\"" + loc["hAccuracy"]!)
+                strLoc = strLoc.appending("\",\"height\":\"" + loc["height"]!)
+                strLoc = strLoc.appending("\",\"latitude\":\"" + loc["latitude"]!)
+                strLoc = strLoc.appending("\",\"longitude\":\"" + loc["longitude"]!)
+                strLoc = strLoc.appending("\",\"timeStamp\":\"" + loc["timeStamp"]!)
+                strLoc = strLoc.appending("\",\"vAccuracy\":\"" + loc["vAccuracy"]!)
+                
+                strLoc = strLoc.appending("\"},")
+                
+            }
+            strLoc.removeLast()
+            strLoc.append("]")
+            
+        }
+        
+        let currentDate = Date()
+        let since1970 = currentDate.timeIntervalSince1970
+        let timeStamp = Int(since1970 * 1000)
+        if strLoc != ""
+        {
+            params["location"] = "\(strLoc)" as AnyObject
+        }
+        if strBaro != ""
+        {
+            params["barometer"] = "\(strBaro)" as AnyObject
+        }
+        params["timeStamp"] = "\(timeStamp)" as AnyObject
+        
         
         obj.tag = ParsingConstant.PostLocationRequest.rawValue
         obj.MethodNamee = "POST"
@@ -308,6 +347,13 @@ class ConnectionManager: NSObject {
         {
             obj._serviceURL = "http://demo-d1.polariswireless.com/autoReport.php"
         }
+        
+        if arrLoc.count > 0
+        {
+            let dict = arrLoc[arrLoc.count - 1]
+            obj._serviceURL = obj._serviceURL + "?device_imei=\(device_imei)&acc=\(dict["hAccuracy"] ?? "" )request_time=0&long=\(dict["longitude"] ?? "")&location_id=\(location_id)&lat=\(dict["latitude"] ?? "")&loc_engine=HLE&alt=0&device_imsi=EC9D8F39B5484DBE96DD9C405881096E"
+        }
+        
         obj.params = params
         obj.doGetResponse {(success : Bool) -> Void in
             if !success
