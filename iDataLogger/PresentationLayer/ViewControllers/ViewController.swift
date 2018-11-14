@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import CoreLocation
+import CoreMotion
 
 
 class ViewController: BaseViewController {
@@ -22,6 +24,12 @@ class ViewController: BaseViewController {
     var subscriberID = ""
     var counter = 0
     
+    var arrLoc = [[String:String]]()
+    var arrBaro = [[String:String]]()
+
+    var collectLocationTimer=Timer()
+    var collectBaroTimer=Timer()
+
     
     @IBAction func btnStartTestClicked(_ sender: UIButton) {
         sender.isSelected = !sender.isSelected
@@ -62,50 +70,72 @@ class ViewController: BaseViewController {
                 print("Error in getting Pressure: \(error)")
             }
         }
-       // noOfTestTxtFld.text = "300"
-       // secondsIntervalTxtFld.text = "5"
-       // locationNameTxtFld.text = "TP"
+        
         self.callHeartApi()
 
     }
+    func collectLocData()
+    {
+        if let loc = LocationManager.shared.location
+        {
+            let currentDate = Date()
+            let since1970 = currentDate.timeIntervalSince1970
+            let timeStamp = Int(since1970 * 1000)
+            
+            var dictLocTemp = [String:String]()
+            dictLocTemp["hAccuracy"] = "\(loc.horizontalAccuracy)"
+            dictLocTemp["height"] = "0"
+            dictLocTemp["latitude"] = "\(loc.coordinate.latitude)"
+            dictLocTemp["longitude"] = "\(loc.coordinate.longitude)"
+            dictLocTemp["timeStamp"] = "\(timeStamp)"
+            dictLocTemp["vAccuracy"] = "-1"
+            arrLoc.append(dictLocTemp)
+        }
+    }
+    func collectBaroData()
+    {
+        if let altdata = BaroManager.shared.altData
+        {
+            var dictBaroTemp = [String:String]()
+            dictBaroTemp["pressure"] = "\(altdata.pressure)"
+            dictBaroTemp["altitude"] = "\(altdata.relativeAltitude)"
+            dictBaroTemp["time"] = "0"
+            arrBaro.append(dictBaroTemp)
+        }
+    }
+
     func   postLocationRequestToServer()
     {
+        //add
+        var dictReq = [String:AnyObject]()
+        dictReq["location"] = [["hAccuracy" : "5","height" : "0","latitude" : "37.785834","longitude" : "-122.406417","timeStamp" : "1542160661.819661","vAccuracy" : "-1"],["hAccuracy" : "5","height" : "0","latitude" : "37.785834","longitude" : "-122.406417","timeStamp" : "1542160661.819661","vAccuracy" : "-1"]] as AnyObject
+        let currentDate = Date()
+        let since1970 = currentDate.timeIntervalSince1970
+        let timeStamp = Int(since1970 * 1000)
         
+
+        dictReq["timeStamp"] = "\(timeStamp)" as AnyObject
         counter = counter + 1
         let interval = (noOfTestTxtFld.text! as NSString).intValue
-
+        
         if counter > interval
         {
-            counter = 0
             locationTimer.invalidate()
             return
         }
         print("Current Location : \(LocationManager.shared.location.coordinate.latitude,LocationManager.shared.location.coordinate.longitude)")
         let layer = ConnectionManager()
-//        layer.sendRequestWith(isLocReq:true,loc_engine: "HLE", request_time: "0", device_imsi: "405861004463230", device_imei: "865124034527731", location_id: "TP", lat: "12.88943307", long: "77.55161143", acc: "166.16", alt: "826.783203125", vAccuracy: "64.0", speed: "0.0", speedAccuracy: "2.0671237", successMessage:
-//            { (response) in
-//                DispatchQueue.main.async {
-//                    print("Success")
-//                }
-//
-//        }) { (error) in
-//            DispatchQueue.main.async {
-//                print("error")
-//            }
-//
-//        }
-        
-                layer.sendRequestWith(isLocReq:false,loc_engine: "HLE", request_time: "0", device_imsi: subscriberID, device_imei: uuid, location_id: locationNameTxtFld.text!, lat: "\(LocationManager.shared.location.coordinate.latitude)", long: "\(LocationManager.shared.location.coordinate.longitude)", acc: "\(LocationManager.shared.location.horizontalAccuracy)", alt: "\(LocationManager.shared.location.altitude)", vAccuracy: "\(LocationManager.shared.location.verticalAccuracy)", speed: "\(LocationManager.shared.location.speed)", speedAccuracy: "2.0671237", successMessage: { (response) in
-                    DispatchQueue.main.async {
-                        print("Post LocationRequest Success")
-                    }
-        
-                }) { (error) in
-                    DispatchQueue.main.async {
-                        print("Post LocationRequest error")
-                    }
-        
-                }
+        layer.sendRequestWith(isLocReq: false, params: dictReq, successMessage: { (response) in
+            DispatchQueue.main.async {
+                print("Success in Loc Service")
+                self.arrBaro.removeAll()
+                self.arrLoc.removeAll()
+            }
+        }) { (error) in
+            DispatchQueue.main.async {
+                print("error in Loc Service")
+            }
+        }
     }
 
     func callHeartApi()
@@ -118,6 +148,19 @@ class ViewController: BaseViewController {
                 self.secondsIntervalTxtFld.text = "\(bo.Autotest_interval_in_secs)"
                 self.noOfTestTxtFld.text = "\(bo.Autotest_test_count)"
                 self.locationNameTxtFld.text = bo.Autotest_location_name
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + bo.Location_update_rate_in_ms/1000) {
+                self.collectLocationTimer = Timer.scheduledTimer(withTimeInterval: bo.Location_update_rate_in_ms/1000, repeats: true, block: { (timer) in
+                    self.collectLocData()
+                })
+                }
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + bo.Location_update_rate_in_ms/1000) {
+                    
+                    self.collectBaroTimer = Timer.scheduledTimer(withTimeInterval: bo.Baro_update_rate_in_ms/1000, repeats: true, block: { (timer) in
+                        self.collectBaroData()
+                    })
+                    
+
+                }
             }
         }) { (error) in
             DispatchQueue.main.async {

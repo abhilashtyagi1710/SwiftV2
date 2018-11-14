@@ -150,14 +150,14 @@ class HttpRequest
         if allKey > 0
         {
             
-            Envelope?.appendFormat("%@=%@", keys.first! , self.params[keys.first!] as! String)
+//            Envelope?.appendFormat("%@=%@", keys.first! , self.params[keys.first!] as! String)
             
             
-            for i in 1 ..< allKey {
+            for i in 0 ..< allKey-1 {
                 
                 let object : AnyObject = self.params[Array(keys)[i]]! as AnyObject;
                 
-                if object is NSString
+                if object is NSString || object is String
                 {
                     Envelope?.appendFormat("&%@=%@", Array(keys)[i],self.params[Array(keys)[i]] as! String)
                     

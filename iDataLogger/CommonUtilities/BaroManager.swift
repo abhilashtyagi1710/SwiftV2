@@ -13,7 +13,7 @@ class BaroManager: NSObject {
     static let shared = BaroManager()
     override init(){}
     let altimeter = CMAltimeter()
-
+    var altData : CMAltitudeData!
     func startBaroManager(completion: @escaping (CMAltitudeData)->Void,failure: @escaping(Any)->Void)
     {
         // 1
@@ -22,6 +22,7 @@ class BaroManager: NSObject {
             altimeter.startRelativeAltitudeUpdates(to: OperationQueue.main, withHandler: { data, error in
                 // 3
                 if (error == nil) {
+                    self.altData = data
                     completion(data!)
                 }
                 else

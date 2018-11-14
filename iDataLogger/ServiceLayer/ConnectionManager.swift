@@ -220,23 +220,84 @@ class ConnectionManager: NSObject {
             }
         }
     }
-    public func sendRequestWith(isLocReq:Bool,loc_engine:String,request_time:String,device_imsi:String,device_imei:String,location_id:String,lat:String,long:String,acc:String,alt:String,vAccuracy:String,speed:String,speedAccuracy:String,successMessage: @escaping (Any) -> Void , failureMessage : @escaping(Any) ->Void)
+    func tes(isLocReq:Bool,arrLocation:[[String:AnyObject]],successMessage: @escaping (Any) -> Void , failureMessage : @escaping(Any) ->Void)
+    {
+        if app_delegate.isServerReachable == true
+        {
+            var requestBody:Data?
+//            if self.ServiceBody.count > 0
+//            {
+//                requestBody = self.ServiceBody.data(using: String.Encoding.utf8)
+//            }
+//            else
+//            {
+//                requestBody = self.doPrepareEnvelope().data(using: String.Encoding.utf8.rawValue)
+//            }
+            var strUrl = ""
+            if isLocReq
+            {
+                strUrl = "http://demo-d1.polariswireless.com/locationRequest.php"
+            }
+            else
+            {
+                strUrl = "http://demo-d1.polariswireless.com/autoReport.php"
+            }
+            var webStringURL = ""
+            webStringURL =    (strUrl.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)! as NSString) as String
+            
+            var request  = URLRequest(url: URL(string:webStringURL)!)
+            
+            request.httpMethod = "POST"
+            request.httpBody = requestBody
+            webStringURL =    webStringURL.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
+            
+            let url : URL = URL(string: webStringURL as String)!
+            request.url = url
+            
+            print("url = ")
+            print(url)
+            let config = URLSessionConfiguration.ephemeral
+            config.timeoutIntervalForRequest = 180.0
+            config.timeoutIntervalForResource = 180.0
+            let session = URLSession(configuration: config)
+            let task = session.dataTask(with: request) { (data, response, err) in
+                if err != nil
+                {
+                    failureMessage(err.debugDescription)
+                }else{
+                    var parsedDataDict = [String:AnyObject]()
+                    let dataString = NSString(data: data!, encoding: String.Encoding.utf8.rawValue)
+                    print("Response : ",dataString ?? "")
+                    let data = self.convertStringToDictionary(dataString! as String)
+                    parsedDataDict = self.convertStringToDictionary(dataString! as String)!
+                    successMessage (parsedDataDict)
+                }
+            }
+            task.resume()
+        }
+        else
+        {
+            failureMessage("Server not reachable")
+        }
+        
+    }
+    public func sendRequestWith(isLocReq:Bool,params:[String:AnyObject],successMessage: @escaping (Any) -> Void , failureMessage : @escaping(Any) ->Void)
     {
         let obj : HttpRequest = HttpRequest()
-        var params = [String:AnyObject]()
-        params["loc_engine"] = loc_engine as AnyObject
-        params["request_time"] = request_time as AnyObject
-        params["device_imsi"] = device_imsi as AnyObject
-        params["device_imei"] = device_imei as AnyObject
-        params["location_id"] = location_id as AnyObject
-        params["lat"] = lat as AnyObject
-        params["long"] = long as AnyObject
-        params["acc"] = acc as AnyObject
-        params["alt"] = alt as AnyObject
-        params["vAccuracy"] = vAccuracy as AnyObject
-        params["speed"] = speed as AnyObject
-        params["speedAccuracy"] = speedAccuracy as AnyObject
-
+        //        var params = [String:AnyObject]()
+        //        params["loc_engine"] = loc_engine as AnyObject
+        //        params["request_time"] = request_time as AnyObject
+        //        params["device_imsi"] = device_imsi as AnyObject
+        //        params["device_imei"] = device_imei as AnyObject
+        //        params["location_id"] = location_id as AnyObject
+        //        params["lat"] = lat as AnyObject
+        //        params["long"] = long as AnyObject
+        //        params["acc"] = acc as AnyObject
+        //        params["alt"] = alt as AnyObject
+        //        params["vAccuracy"] = vAccuracy as AnyObject
+        //        params["speed"] = speed as AnyObject
+        //        params["speedAccuracy"] = speedAccuracy as AnyObject
+        
         obj.tag = ParsingConstant.PostLocationRequest.rawValue
         obj.MethodNamee = "POST"
         if isLocReq
