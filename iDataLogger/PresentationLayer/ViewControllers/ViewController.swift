@@ -23,6 +23,7 @@ class ViewController: BaseViewController {
     var uuid = ""
     var subscriberID = ""
     var counter = 0
+    var heartBO = HeartBeatBO()
     
     var arrLoc = [[String:String]]()
     var arrBaro = [[String:String]]()
@@ -36,7 +37,21 @@ class ViewController: BaseViewController {
         FDKeychain.saveItem(subscriberIDTxtFld.text! as NSCoding, forKey: KeychainItem_imeiUUID, forService: KeychainItem_Service, error: nil)
         if sender.isSelected
         {
-            self.postLocationRequestToServer()
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + (self.heartBO.Location_update_rate_in_ms + self.heartBO.Session_data_collection_delay_in_ms)/1000) {
+                self.collectLocationTimer = Timer.scheduledTimer(withTimeInterval: self.heartBO.Location_update_rate_in_ms/1000, repeats: true, block: { (timer) in
+                    self.collectLocData()
+                })
+            }
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + (self.heartBO.Baro_update_rate_in_ms + self.heartBO.Session_data_collection_delay_in_ms)/1000) {
+                
+                self.collectBaroTimer = Timer.scheduledTimer(withTimeInterval: self.heartBO.Baro_update_rate_in_ms/1000, repeats: true, block: { (timer) in
+                    self.collectBaroData()
+                })
+                
+                
+            }
+
+//            self.postLocationRequestToServer()
             let interval = (secondsIntervalTxtFld.text! as NSString).doubleValue
             locationTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true, block: { (timer) in
                 self.postLocationRequestToServer()
@@ -61,13 +76,13 @@ class ViewController: BaseViewController {
         LocationManager.shared.startLocationManager()
         BaroManager.shared.startBaroManager(completion: { (data) in
             DispatchQueue.main.async {
-                print("Relative Altitude: \(data.relativeAltitude)")
-                print("Pressure: \(data.pressure)")
+//                print("Relative Altitude: \(data.relativeAltitude)")
+//                print("Pressure: \(data.pressure)")
                 
             }
         }) { (error) in
             DispatchQueue.main.async {
-                print("Error in getting Pressure: \(error)")
+//                print("Error in getting Pressure: \(error)")
             }
         }
         
@@ -76,6 +91,7 @@ class ViewController: BaseViewController {
     }
     func collectLocData()
     {
+        print("Location time : \(Date())")
         if let loc = LocationManager.shared.location
         {
             let currentDate = Date()
@@ -94,6 +110,8 @@ class ViewController: BaseViewController {
     }
     func collectBaroData()
     {
+        print("Barometer time : \(Date())")
+
         if let altdata = BaroManager.shared.altData
         {
             var dictBaroTemp = [String:String]()
@@ -110,14 +128,6 @@ class ViewController: BaseViewController {
         {
             return
         }
-        var dictReq = [String:AnyObject]()
-        dictReq["location"] = [["hAccuracy" : "5","height" : "0","latitude" : "37.785834","longitude" : "-122.406417","timeStamp" : "1542160661.819661","vAccuracy" : "-1"],["hAccuracy" : "5","height" : "0","latitude" : "37.785834","longitude" : "-122.406417","timeStamp" : "1542160661.819661","vAccuracy" : "-1"]] as AnyObject
-        let currentDate = Date()
-        let since1970 = currentDate.timeIntervalSince1970
-        let timeStamp = Int(since1970 * 1000)
-        
-
-        dictReq["timeStamp"] = "\(timeStamp)" as AnyObject
         counter = counter + 1
         let interval = (noOfTestTxtFld.text! as NSString).intValue
         
@@ -126,17 +136,35 @@ class ViewController: BaseViewController {
             locationTimer.invalidate()
             return
         }
-        print("Current Location : \(LocationManager.shared.location.coordinate.latitude,LocationManager.shared.location.coordinate.longitude)")
+        print("Service Time : \(Date())")
+
+//        print("Current Location : \(LocationManager.shared.location.coordinate.latitude,LocationManager.shared.location.coordinate.longitude)")
         let layer = ConnectionManager()
         layer.sendRequestWith(isLocReq: true, device_imsi: "", device_imei: uuid, location_id: locationNameTxtFld.text!, arrLoc: arrLoc,arrBaro: arrBaro, successMessage: { (response) in
             DispatchQueue.main.async {
-                print("Success in Loc Service")
+//                print("Success in Loc Service")
                 self.arrBaro.removeAll()
                 self.arrLoc.removeAll()
+                self.collectLocationTimer.invalidate()
+                self.collectBaroTimer.invalidate()
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + (self.heartBO.Location_update_rate_in_ms + self.heartBO.Session_data_collection_delay_in_ms)/1000) {
+                    self.collectLocationTimer = Timer.scheduledTimer(withTimeInterval: self.heartBO.Location_update_rate_in_ms/1000, repeats: true, block: { (timer) in
+                        self.collectLocData()
+                    })
+                }
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + (self.heartBO.Baro_update_rate_in_ms + self.heartBO.Session_data_collection_delay_in_ms)/1000) {
+                    
+                    self.collectBaroTimer = Timer.scheduledTimer(withTimeInterval: self.heartBO.Baro_update_rate_in_ms/1000, repeats: true, block: { (timer) in
+                        self.collectBaroData()
+                    })
+                    
+                    
+                }
+
             }
         }) { (error) in
             DispatchQueue.main.async {
-                print("error in Loc Service")
+//                print("error in Loc Service")
             }
         }
     }
@@ -146,28 +174,15 @@ class ViewController: BaseViewController {
         let layer = ConnectionManager()
         layer.getHeartBeatFrom(url: "", successMessage: { (response) in
             DispatchQueue.main.async {
-                print("Call Remote Config Success")
-                let bo = response as! HeartBeatBO
-                self.secondsIntervalTxtFld.text = "\(bo.Autotest_interval_in_secs)"
-                self.noOfTestTxtFld.text = "\(bo.Autotest_test_count)"
-                self.locationNameTxtFld.text = bo.Autotest_location_name
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + bo.Location_update_rate_in_ms/1000) {
-                self.collectLocationTimer = Timer.scheduledTimer(withTimeInterval: bo.Location_update_rate_in_ms/1000, repeats: true, block: { (timer) in
-                    self.collectLocData()
-                })
-                }
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + bo.Location_update_rate_in_ms/1000) {
-                    
-                    self.collectBaroTimer = Timer.scheduledTimer(withTimeInterval: bo.Baro_update_rate_in_ms/1000, repeats: true, block: { (timer) in
-                        self.collectBaroData()
-                    })
-                    
-
-                }
+//                print("Call Remote Config Success")
+                self.heartBO = response as! HeartBeatBO
+                self.secondsIntervalTxtFld.text = "\(self.heartBO.Autotest_interval_in_secs)"
+                self.noOfTestTxtFld.text = "\(self.heartBO.Autotest_test_count)"
+                self.locationNameTxtFld.text = self.heartBO.Autotest_location_name
             }
         }) { (error) in
             DispatchQueue.main.async {
-                print("Call Remote Config Error")
+//                print("Call Remote Config Error")
             }
         }
     }
